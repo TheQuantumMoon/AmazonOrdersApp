@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace AmazonOrdersApp {
     internal class Program {
@@ -6,7 +7,8 @@ namespace AmazonOrdersApp {
         // Verschillende (soms meerdere keren voorkomende) soorten productcodes en een aantal
         // Geeft de 15 meest verkochte producten en het aantal weer
         // Binnen de 4 seconden!
-        private const string FilePath = "amazon_orders.txt";
+        private const string _filePathInput = "amazon_orders.txt";
+        private const string _filePathOutput = "amazon_orders_verwerkt.txt";
         static void Main() {
 
             while (true) {
@@ -14,27 +16,28 @@ namespace AmazonOrdersApp {
                 string input = Console.ReadLine()!.Trim().ToLower();
 
                 if (input == "g") {
-                    GenerateData();
+                    GenerateData(_filePathInput);
                     Console.WriteLine("Nieuwe dataset gegenereerd!\n");
 
                 } else if (input == "v") {
-                    ProcessAmazonOrders orderList = new(FilePath);
-                    orderList.PrintAmount(50);
+                    Stopwatch stopwatch = Stopwatch.StartNew();
+                    ProcessAmazonOrders orderList = new(_filePathInput, _filePathOutput);
+                    stopwatch.Stop();
+
+                    long ms = stopwatch.ElapsedMilliseconds;
+                    Console.WriteLine($"\nUitvoeringstijd: {ms} ms\n");
                 }
                 else {
                     continue;
                 }
             }
-
-            Console.WriteLine("\nEND OF PROGRAM");
-            Console.ReadKey();
         }
 
-        private static void GenerateData() {
+        private static void GenerateData(string filePath) {
             int amountOfOrders = 500000;
             int amountOfDifferentOrders = 400000;
-            int maxAmountSingleOrder = 20;
-            _ = new GenerateAmazonOrders(amountOfOrders, amountOfDifferentOrders, maxAmountSingleOrder, FilePath);
+            int maxAmountSingleOrder = 200;
+            _ = new GenerateAmazonOrders(amountOfOrders, amountOfDifferentOrders, maxAmountSingleOrder, filePath);
         }
 
     }

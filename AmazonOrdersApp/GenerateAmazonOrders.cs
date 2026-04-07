@@ -66,7 +66,7 @@ namespace AmazonOrdersApp {
                 int amount = GenerateAmount();
                 int randomIndex = _random.Next(0, AmountOfDifferentOrders);
                 string asin = asinCollection[randomIndex];
-                generatedOrders.AppendLine($"{asin}:{amount}");
+                generatedOrders.AppendLine($"{amount};{asin}");
             }
             File.WriteAllText(FilePath, generatedOrders.ToString());
         }
@@ -74,16 +74,14 @@ namespace AmazonOrdersApp {
         private int GenerateAmount() => _random.Next(1, MaxAmountSingleOrder + 1);
 
         private string GenerateAsin() {
-            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
             int length = 8;
-
-            char[] asin = new char[length];
+            int[] asin = new int[length];
 
             for (int i = 0; i < length; i++) {
-                asin[i] = chars[_random.Next(chars.Length)];
+                asin[i] = _random.Next(10);
             }
 
-            return "ASIN_B0" + new string(asin);
+            return "ASIN_B0" + string.Concat(asin);
         }
         #endregion
 

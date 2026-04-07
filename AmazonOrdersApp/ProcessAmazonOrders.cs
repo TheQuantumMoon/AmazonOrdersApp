@@ -4,49 +4,67 @@ using System.Text;
 
 namespace AmazonOrdersApp {
     internal class ProcessAmazonOrders {
+        #region FIELDS ---------------------------------------------------------------------------------------------------
+        private string _filePathInput = "";
+        private string _filePathOutput = "";
+        private string[] _dataArray;
+        #endregion
 
-        private string _filePath = "";
-        private readonly string[] dataArray;
+        #region PROPERTIES ---------------------------------------------------------------------------------------------------
+        private string FilePathInput {
+            get => _filePathInput;
+            init => _filePathInput = value;
+        }
+        private string FilePathOutput {
+            get => _filePathOutput;
+            set => _filePathOutput = value;
+        }
+        #endregion
 
-        private string FilePath {
-            get => _filePath;
-            init => _filePath = value;
+        #region CONSTRUCTORS ---------------------------------------------------------------------------------------------------
+        public ProcessAmazonOrders(string filePathInput, string filePathOutput) {
+            FilePathInput = filePathInput;
+            FilePathOutput = filePathOutput;
+            _dataArray = File.ReadAllLines(FilePathInput);
+            StartProcessing();
+        }
+        #endregion
+
+        #region METHODS ---------------------------------------------------------------------------------------------------
+        private void StartProcessing() {
+            PutAmountAtTheEnd(_dataArray);
+            Array.Sort(_dataArray);
+            ConsolidateOrders(ref _dataArray);
+            File.WriteAllLines(FilePathOutput, _dataArray);
+        }
+        
+        private static void PutAmountAtTheEnd(string[] array) {
+            for (int i = 0; i < array.Length; i++) {
+                string[] splitOrder = array[i].Split(';');
+                Array.Reverse(splitOrder);
+                array[i] = string.Join(';', splitOrder);
+            }
         }
 
-        public ProcessAmazonOrders(string filePath) {
-            FilePath = filePath;
-            dataArray = ConsolodateData(File.ReadAllLines(FilePath));
-        }
+        private static void ConsolidateOrders(ref string[] array) {
+            List<string> arrayToList = [.. array];
+            for (int i = 0; i < arrayToList.Count - 1; i++) {
+                string[] currentOrder = arrayToList[i].Split(';');
+                string[] nextOrder = arrayToList[i + 1].Split(';');
+                string currentAsin = currentOrder[0];
+                string nextAsin = nextOrder[0];
 
-        private string[] ConsolodateData(string[] dataArray) {
-            List<string> consolodatedData = [];
-            for (int i = 0; i < dataArray.Length; i++) {
-                string currentAsin = dataArray[i];
-                int matchingIndex = consolodatedData.IndexOf(currentAsin);
-                if (matchingIndex < 0) {
-                    consolodatedData.Add(currentAsin);
-                } else {
-                    string matchingAsin = consolodatedData[matchingIndex];
-                    int newAmount = int.Parse(currentAsin.Split(':')[1]);
-                    int oldAmount = int.Parse(matchingAsin.Split(':')[1]);
-                    consolodatedData[matchingIndex] = matchingAsin.Split(':')[0] + ":" + (newAmount + oldAmount).ToString();
+                if (currentAsin == nextAsin) {
+                    int currentAmount = int.Parse(currentOrder[1]);
+                    int nextAmount = int.Parse(nextOrder[1]);
+                    int totalAmount = currentAmount + nextAmount;
+                    arrayToList[i] = currentAsin + ";" + totalAmount;
+                    arrayToList.RemoveAt(i + 1);
                 }
             }
-
-            return [.. consolodatedData];
+            array = [.. arrayToList];
         }
-
-        public void PrintAmount(int amount) {
-            for (int i = 0; i < amount; i++) {
-                Console.WriteLine(dataArray[i]);
-            }
-        }
-
-        public string[] GetTop(int top) {
-
-
-            return default;
-        }
+        #endregion
 
     }
 }
