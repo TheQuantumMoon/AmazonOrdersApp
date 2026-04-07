@@ -35,7 +35,7 @@ namespace AmazonOrdersApp {
 
         private static void GenerateData(string filePath) {
             int amountOfOrders = 500000;
-            int amountOfDifferentOrders = 400000;
+            int amountOfDifferentOrders = 500000;
             int maxAmountSingleOrder = 200;
             _ = new GenerateAmazonOrders(amountOfOrders, amountOfDifferentOrders, maxAmountSingleOrder, filePath);
         }
