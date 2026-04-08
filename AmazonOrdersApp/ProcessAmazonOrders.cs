@@ -1,27 +1,32 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace AmazonOrdersApp {
+﻿namespace AmazonOrdersApp {
     internal class ProcessAmazonOrders {
         #region FIELDS ---------------------------------------------------------------------------------------------------
         private string _filePathInput = "";
         private string _filePathOutput = "";
-        private SortedDictionary<string, int> _orders = [];
+        private readonly Dictionary<string, int> _orders = [];
+        private Dictionary<string, int> _ordersSortedByKey = [];
+        private Dictionary<string, int> _ordersSortedByValue = [];
         #endregion
 
         #region PROPERTIES ---------------------------------------------------------------------------------------------------
         private string FilePathInput {
             get => _filePathInput;
-            init => _filePathInput = value;
+            init {
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+                _filePathInput = value;
+            }
         }
         private string FilePathOutput {
             get => _filePathOutput;
-            set => _filePathOutput = value;
+            init {
+                ArgumentException.ThrowIfNullOrWhiteSpace(value);
+                _filePathOutput = value;
+            }
         }
         #endregion
 
         #region CONSTRUCTORS ---------------------------------------------------------------------------------------------------
+        // Zorgt dat bij het aanmaken van het object, _orders wordt gevuld met unieke keys, duplicate keys worden niet toegevoegd, maar hun value's worden wel opgeteld
         public ProcessAmazonOrders(string filePathInput, string filePathOutput) {
             FilePathInput = filePathInput;
             FilePathOutput = filePathOutput;
@@ -42,13 +47,49 @@ namespace AmazonOrdersApp {
         #endregion
 
         #region METHODS ---------------------------------------------------------------------------------------------------
+        // Spreekt voor zichzelf
         private void StartProcessing() {
-            StoreData();
+            _ordersSortedByKey = GetOrdersSortedByKey();
+            _ordersSortedByValue = GetSortedOrdersByValue();
+            StoreOrders(_ordersSortedByKey);
         }
 
-        private void StoreData() {
-            var sortedAndConsolidatedOrders = _orders.Select(order => order.Key + ";" + order.Value);
+        // Geeft een Dictionary terug, dat de _orders zijn, gesorteerd op de key (oplopend)
+        private Dictionary<string, int> GetOrdersSortedByKey() {
+            return _orders.OrderBy(item => item.Key).ToDictionary();
+        }
+
+        // Geeft een Dictionary terug, dat de _orders zijn, gesorteerd op de value (aflopend)
+        private Dictionary<string, int> GetSortedOrdersByValue() {
+            return _orders.OrderByDescending(item => item.Value).ToDictionary();
+        }
+
+        // Schrijft een gegeven Dictionary weg naar een tekstbestand op locatie _filePathOutput
+        private void StoreOrders(Dictionary<string, int> orders) {
+            var sortedAndConsolidatedOrders = orders.Select(order => order.Key + ";" + order.Value);
             File.WriteAllLines(_filePathOutput, sortedAndConsolidatedOrders);
+        }
+
+        // Geeft een string array terug, gevuld met de x hoogste orders, gebaseerd op hun verkoopaantal
+        public string[] GetTopXamount(int amount) {
+            string[] output = new string[amount];
+            int index = 0;
+            foreach (var item in _ordersSortedByValue) {
+                if (index >= amount) break;
+                output[index] = item.Key + ": " + item.Value;
+                index++;
+            }
+            return output;
+        }
+
+        // Geeft het verkoopaantal terug van een asin
+        public int? GetAmountByAsin(string asin) {
+            if (_orders.ContainsKey(asin)) {
+                return _orders[asin];
+            } else {
+                return null;
+            }
+            
         }
         #endregion
 

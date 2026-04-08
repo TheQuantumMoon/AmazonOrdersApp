@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Text;
 
 namespace AmazonOrdersApp {
     internal class GenerateAmazonOrders {
@@ -9,8 +7,7 @@ namespace AmazonOrdersApp {
         private string _filePath = "";
         private int _maxAmountSingleOrder;
         private int _amountOfOrders;
-        private int _amountOfDifferentOrders;
-        private readonly string[] asinCollection;
+        private int _amountOfPossibleDifferentOrders;
         #endregion
 
         #region PROPERTIES ---------------------------------------------------------------------------------------------------
@@ -22,10 +19,10 @@ namespace AmazonOrdersApp {
             }
         }
         private int AmountOfDifferentOrders {
-            get => _amountOfDifferentOrders;
+            get => _amountOfPossibleDifferentOrders;
             set {
                 ArgumentOutOfRangeException.ThrowIfLessThan(value, 0);
-                _amountOfDifferentOrders = value;
+                _amountOfPossibleDifferentOrders = value;
             }
         }
         private int MaxAmountSingleOrder {
@@ -46,7 +43,6 @@ namespace AmazonOrdersApp {
             AmountOfOrders = amountOfOrders;
             AmountOfDifferentOrders = amountOfDifferentOrders;
             MaxAmountSingleOrder = maxAmountSingleOrder;
-            asinCollection = new string[AmountOfDifferentOrders];
             FilePath = filePath;
             StartGenerating();
         }
@@ -54,25 +50,34 @@ namespace AmazonOrdersApp {
 
         #region METHODS ---------------------------------------------------------------------------------------------------
         private void StartGenerating() {
-            // Fill the asinCollection with random asins
-            for (int i = 0; i < asinCollection.Length; i++) {
-                string asin = GenerateAsin();
-                asinCollection[i] = asin;
+            // Vul de asinCollection met willekeurige asin's
+            HashSet<string> asinCollectionHash = [];
+            for (int i = 0; i < AmountOfDifferentOrders; i++) {
+                string asin;
+                do {
+                    asin = GenerateAsin();
+                }
+                while (asinCollectionHash.Contains(asin));
+                asinCollectionHash.Add(asin);
             }
+            string[] asinCollection = [.. asinCollectionHash];
 
-            // Fill the stringbuilder with a list of asins randomly chosen from de asincollection togheter with a radom amount
+            // Vul de StringBuilder met een lijst van asin's, willekeurig gekozen van asincommection + een willikeirig aantal
             StringBuilder generatedOrders = new();
             for (int i = 0; i < AmountOfOrders; i++) {
                 int amount = GenerateAmount();
                 int randomIndex = _random.Next(0, AmountOfDifferentOrders);
                 string asin = asinCollection[randomIndex];
+
                 generatedOrders.AppendLine($"{amount};{asin}");
             }
             File.WriteAllText(FilePath, generatedOrders.ToString());
         }
 
+        // Genereert een int van 1 tot en met MaxAmountSingleOrder
         private int GenerateAmount() => _random.Next(1, MaxAmountSingleOrder + 1);
 
+        // Genereert een willekeurige asin code
         private string GenerateAsin() {
             int length = 8;
             int[] asin = new int[length];
