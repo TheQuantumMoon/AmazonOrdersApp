@@ -1,31 +1,32 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security.Cryptography.X509Certificates;
 
 namespace AmazonOrdersApp {
     internal class Program {
         // 500 000 producten in een tekst bestand
         // Geeft de 15 meest verkochte producten en het aantal weer
         // Binnen de 4 seconden!
-        private const string _filePathInput = "amazon_orders.txt";
-        private const string _filePathOutput = "amazon_orders_verwerkt.txt";
+        private const string _defaultFilePathInput = "amazon_orders.txt";
+        private const string _defaultFilePathOutput = "amazon_orders_verwerkt.txt";
         static void Main() {
 
             while (true) {
                 // Vraag de gebruiker om een actie
-                Console.Write("[G]enereer een nieuwe dataset of [V]erwerk de bestaande dataset? : ");
+                Console.Write("\n[G]enereer een nieuwe dataset of [V]erwerk de bestaande dataset? : ");
                 string input = Console.ReadLine()!.Trim().ToLower();
 
                 if (input == "g") {
                     // Genereer een tekstbestand met amazon orders
                     Stopwatch stopwatch = Stopwatch.StartNew();
-                    GenerateOrders(_filePathInput);
+                    GenerateOrders(_defaultFilePathInput);
                     stopwatch.Stop();
                     Console.WriteLine($"Nieuwe dataset gegenereerd in {stopwatch.ElapsedMilliseconds} ms!\n");
 
                 } else if (input == "v") {
                     // Verwerk een tekstbestand met amazon orders en steek dit in een object
                     Stopwatch stopwatch = Stopwatch.StartNew();
-                    ProcessAmazonOrders orderList = new(_filePathInput, _filePathOutput);
+                    ProcessAmazonOrders orderList = new(_defaultFilePathInput, _defaultFilePathOutput);
                     stopwatch.Stop();
                     Console.WriteLine($"\nUitvoeringstijd: {stopwatch.ElapsedMilliseconds} ms\n");
 

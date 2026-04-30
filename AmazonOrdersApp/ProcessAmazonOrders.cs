@@ -30,16 +30,18 @@
         public ProcessAmazonOrders(string filePathInput, string filePathOutput) {
             FilePathInput = filePathInput;
             FilePathOutput = filePathOutput;
-            foreach (string line in File.ReadLines(FilePathInput)) {
-                string[] order = line.Split(';');
-                int amount = int.Parse(order[0]);
-                string asin = order[1];
+            if (File.Exists(FilePathInput)) {
+                foreach (string line in File.ReadLines(FilePathInput)) {
+                    string[] order = line.Split(';');
+                    int amount = int.Parse(order[0]);
+                    string asin = order[1];
 
-                if (_orders.TryGetValue(asin, out int existingValue)) {
-                    _orders[asin] = existingValue + amount;
-                }
-                else {
-                    _orders.Add(asin, amount);
+                    if (_orders.TryGetValue(asin, out int existingValue)) {
+                        _orders[asin] = existingValue + amount;
+                    }
+                    else {
+                        _orders.Add(asin, amount);
+                    }
                 }
             }
             StartProcessing();
@@ -86,10 +88,11 @@
         public int? GetAmountByAsin(string asin) {
             if (_orders.ContainsKey(asin)) {
                 return _orders[asin];
-            } else {
+            }
+            else {
                 return null;
             }
-            
+
         }
         #endregion
 
